@@ -2,7 +2,7 @@
   "name": "Cazador de ofertas",
   "nodes": [
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000002",
+      "id": "c4zad0r0-0000-4000-8000-000000000003",
       "name": "Cada día a las 8:00",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.2,
@@ -22,7 +22,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000003",
+      "id": "c4zad0r0-0000-4000-8000-000000000004",
       "name": "Probar ahora",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
@@ -33,7 +33,7 @@
       "parameters": {}
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000004",
+      "id": "c4zad0r0-0000-4000-8000-000000000005",
       "name": "Configuración",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -42,11 +42,11 @@
         100
       ],
       "parameters": {
-        "jsCode": "// ─────────────────────────────────────────────────────────────\n//  CONFIGURACIÓN · edita este nodo para adaptarlo a tu perfil\n// ─────────────────────────────────────────────────────────────\nreturn [{\n  json: {\n    // Lo que lee la IA para decidir si una oferta encaja contigo\n    perfil: `Estudiante de 2º de DAW (Desarrollo de Aplicaciones Web) en Valencia, España.\nBusco mi primer empleo o prácticas como desarrollador web junior.\nStack: PHP (Laravel), JavaScript, HTML, CSS, SQL (MySQL/PostgreSQL), Java básico.\nTambién: Docker, Git, CI/CD con Jenkins, nociones de AWS y Big Data.\nIdiomas: español nativo, inglés técnico.\nPrefiero remoto o presencial/híbrido en Valencia.`,\n\n    // Filtro previo barato (sin IA): al menos una debe aparecer en título, etiquetas o descripción\n    palabrasClave: ['php', 'laravel', 'javascript', 'typescript', 'frontend', 'front-end',\n      'backend', 'back-end', 'full stack', 'fullstack', 'web developer', 'vue', 'react',\n      'node', 'sql', 'java'],\n\n    // Si el título contiene alguna, se descarta directamente\n    excluirTitulo: ['senior', 'sr.', 'sr ', 'lead', 'staff', 'principal', 'head of',\n      'manager', 'architect', 'director', 'vp '],\n\n    // Ubicaciones aceptadas (se compara en minúsculas). Las ofertas remotas sin restricción también pasan.\n    ubicaciones: ['worldwide', 'anywhere', 'europe', 'emea', 'spain', 'españa', 'valencia',\n      'madrid', 'barcelona', 'cet', 'eu'],\n\n    puntuacionMinima: 6,      // de 0 a 10: a partir de aquí sale en el resumen\n    maxPorEjecucion: 25,      // tope de ofertas que se mandan a la IA por ejecución\n    telegramChatId: 'PON_AQUI_TU_CHAT_ID',\n\n    // Cualquier API compatible con OpenAI: Groq (gratis), OpenRouter, OpenAI, Ollama local...\n    ia: {\n      baseUrl: 'https://api.groq.com/openai/v1',\n      modelo: 'openai/gpt-oss-120b',\n    },\n  },\n}];\n"
+        "jsCode": "// ─────────────────────────────────────────────────────────────\n//  CONFIGURACIÓN · edita este nodo para adaptarlo a tu perfil\n// ─────────────────────────────────────────────────────────────\nreturn [{\n  json: {\n    // Lo que lee la IA para decidir si una oferta encaja contigo\n    perfil: `Estudiante de 2º de DAW (Desarrollo de Aplicaciones Web) en Valencia, España.\nBusco mi primer empleo o prácticas como desarrollador web junior.\nStack: PHP (Laravel), JavaScript, HTML, CSS, SQL (MySQL/PostgreSQL), Java básico.\nTambién: Docker, Git, CI/CD con Jenkins, nociones de AWS y Big Data.\nIdiomas: español nativo, inglés técnico.\nPrefiero remoto o presencial/híbrido en Valencia.`,\n\n    // Filtro previo barato (sin IA): al menos una debe aparecer en título, etiquetas o descripción\n    palabrasClave: ['php', 'laravel', 'javascript', 'typescript', 'frontend', 'front-end',\n      'backend', 'back-end', 'full stack', 'fullstack', 'web developer', 'vue', 'react',\n      'node', 'sql', 'java'],\n\n    // Si el título contiene alguna, se descarta directamente\n    excluirTitulo: ['senior', 'sr.', 'sr ', 'lead', 'staff', 'principal', 'head of',\n      'manager', 'architect', 'director', 'vp '],\n\n    // Ubicaciones aceptadas (se compara en minúsculas). Las ofertas remotas sin restricción también pasan.\n    ubicaciones: ['worldwide', 'anywhere', 'europe', 'emea', 'spain', 'españa', 'valencia',\n      'madrid', 'barcelona', 'cet', 'eu'],\n\n    puntuacionMinima: 6,      // de 0 a 10: a partir de aquí sale en el resumen\n    maxPorEjecucion: 25,      // tope de ofertas que se mandan a la IA por ejecución\n\n    // Por dónde te llegan los avisos: 'whatsapp' (CallMeBot) o 'telegram'\n    aviso: 'whatsapp',\n    whatsappTelefono: '+34XXXXXXXXX',          // tu número, con prefijo de país\n    telegramChatId: 'PON_AQUI_TU_CHAT_ID',     // solo si usas Telegram\n\n    // Cualquier API compatible con OpenAI: Groq (gratis), OpenRouter, OpenAI, Ollama local...\n    ia: {\n      baseUrl: 'https://api.groq.com/openai/v1',\n      modelo: 'openai/gpt-oss-120b',\n    },\n  },\n}];\n"
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000005",
+      "id": "c4zad0r0-0000-4000-8000-000000000006",
       "name": "Remotive",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -85,7 +85,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000006",
+      "id": "c4zad0r0-0000-4000-8000-000000000007",
       "name": "Arbeitnow",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -111,7 +111,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000007",
+      "id": "c4zad0r0-0000-4000-8000-000000000008",
       "name": "Juntar fuentes",
       "type": "n8n-nodes-base.merge",
       "typeVersion": 3,
@@ -122,7 +122,7 @@
       "parameters": {}
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000008",
+      "id": "c4zad0r0-0000-4000-8000-000000000009",
       "name": "Normalizar y filtrar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -135,7 +135,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000009",
+      "id": "c4zad0r0-0000-4000-8000-000000000010",
       "name": "Guardar nuevas",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.8,
@@ -154,7 +154,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000010",
+      "id": "c4zad0r0-0000-4000-8000-000000000011",
       "name": "¿Hay que puntuar?",
       "type": "n8n-nodes-base.if",
       "typeVersion": 2.2,
@@ -188,7 +188,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000011",
+      "id": "c4zad0r0-0000-4000-8000-000000000012",
       "name": "Preparar prompt",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -202,7 +202,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000012",
+      "id": "c4zad0r0-0000-4000-8000-000000000013",
       "name": "Puntuar con IA",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.2,
@@ -235,7 +235,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000013",
+      "id": "c4zad0r0-0000-4000-8000-000000000014",
       "name": "Interpretar respuesta",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -249,7 +249,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000014",
+      "id": "c4zad0r0-0000-4000-8000-000000000015",
       "name": "Agrupar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -262,7 +262,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000015",
+      "id": "c4zad0r0-0000-4000-8000-000000000016",
       "name": "Guardar puntuación",
       "type": "n8n-nodes-base.postgres",
       "typeVersion": 2.8,
@@ -279,7 +279,7 @@
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000016",
+      "id": "c4zad0r0-0000-4000-8000-000000000017",
       "name": "Montar resumen",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
@@ -288,17 +288,90 @@
         100
       ],
       "parameters": {
-        "jsCode": "// Monta el mensaje de Telegram con las mejores ofertas del día.\nconst cfg = $('Configuración').first().json;\nconst stats = $('Normalizar y filtrar').first().json;\nconst nuevas = $('Guardar nuevas').all().filter((i) => i.json.es_nueva === true).length;\n\nconst esc = (s = '') => String(s)\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\nconst buenas = $input.all()\n  .map((i) => i.json)\n  .filter((o) => o.puntuacion !== null && o.puntuacion >= cfg.puntuacionMinima)\n  .sort((a, b) => b.puntuacion - a.puntuacion);\n\nconst barra = (p) => '●'.repeat(p) + '○'.repeat(10 - p);\n\nlet texto = `<b>🎯 Cazador de ofertas</b>\\n`\n  + `${stats.total_descargadas} revisadas · ${stats.total_filtradas} pasan el filtro · `\n  + `${nuevas} nuevas · <b>${buenas.length} encajan contigo</b>\\n`;\n\nconst sinPuntuar = $input.all().filter((i) => i.json.id && i.json.puntuacion === null).length;\nif (sinPuntuar) texto += `\\n⏳ La IA no pudo puntuar ${sinPuntuar} oferta(s); se reintentará en la próxima ejecución.\\n`;\n\nif (stats.errores?.length) {\n  texto += `\\n⚠️ Fuentes con error: ${esc(stats.errores.join(' | ')).slice(0, 300)}\\n`;\n}\n\nfor (const o of buenas.slice(0, 10)) {\n  const bloque = `\\n<b>${o.puntuacion}/10</b> ${barra(o.puntuacion)}\\n`\n    + `<a href=\"${esc(o.url)}\">${esc(o.titulo)}</a>\\n`\n    + `🏢 ${esc(o.empresa ?? '—')} · 📍 ${esc(o.ubicacion ?? '—')}\\n`\n    + (o.tecnologias?.length ? `🧰 ${esc(o.tecnologias.join(', '))}\\n` : '')\n    + (o.motivo ? `💬 <i>${esc(o.motivo)}</i>\\n` : '');\n  if (texto.length + bloque.length > 3900) break; // límite de Telegram: 4096\n  texto += bloque;\n}\n\nif (buenas.length === 0) texto += '\\nHoy no hay nada que merezca la pena. Mañana más 💪';\n\nreturn [{ json: { texto, chatId: cfg.telegramChatId } }];\n"
+        "jsCode": "// Monta el mensaje con las mejores ofertas del día, en formato WhatsApp o Telegram.\nconst cfg = $('Configuración').first().json;\nconst stats = $('Normalizar y filtrar').first().json;\nconst nuevas = $('Guardar nuevas').all().filter((i) => i.json.es_nueva === true).length;\n\nconst todas = $input.all().map((i) => i.json);\nconst buenas = todas\n  .filter((o) => o.puntuacion !== null && o.puntuacion !== undefined && o.puntuacion >= cfg.puntuacionMinima)\n  .sort((a, b) => b.puntuacion - a.puntuacion);\nconst sinPuntuar = todas.filter((o) => o.id && o.puntuacion === null).length;\n\nconst barra = (p) => '●'.repeat(p) + '○'.repeat(10 - p);\n\n// Cada canal tiene su formato: WhatsApp usa *negrita* y _cursiva_; Telegram, HTML\nconst formatos = {\n  whatsapp: {\n    max: 1500, // CallMeBot manda el texto en la URL: mejor mensajes cortos\n    maxOfertas: 5,\n    esc: (s = '') => String(s).replace(/[*_~`]/g, ''),\n    negrita: (s) => `*${s}*`,\n    cursiva: (s) => `_${s}_`,\n    enlace: (texto, url) => `${texto}\\n🔗 ${url}`,\n  },\n  telegram: {\n    max: 3900, // límite de Telegram: 4096\n    maxOfertas: 10,\n    esc: (s = '') => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'),\n    negrita: (s) => `<b>${s}</b>`,\n    cursiva: (s) => `<i>${s}</i>`,\n    enlace: (texto, url) => `<a href=\"${url}\">${texto}</a>`,\n  },\n};\n\nconst canal = cfg.aviso === 'telegram' ? 'telegram' : 'whatsapp';\nconst f = formatos[canal];\n\nlet texto = `🎯 ${f.negrita('Cazador de ofertas')}\\n`\n  + `${stats.total_descargadas} revisadas · ${stats.total_filtradas} pasan el filtro · `\n  + `${nuevas} nuevas · ${f.negrita(`${buenas.length} encajan contigo`)}\\n`;\n\nif (sinPuntuar) texto += `\\n⏳ La IA no pudo puntuar ${sinPuntuar} oferta(s); se reintentará en la próxima ejecución.\\n`;\nif (stats.errores?.length) {\n  texto += `\\n⚠️ Fuentes con error: ${f.esc(stats.errores.join(' | ')).slice(0, 300)}\\n`;\n}\n\nfor (const o of buenas.slice(0, f.maxOfertas)) {\n  const bloque = `\\n${f.negrita(`${o.puntuacion}/10`)} ${barra(o.puntuacion)}\\n`\n    + `${f.enlace(f.esc(o.titulo), f.esc(o.url))}\\n`\n    + `🏢 ${f.esc(o.empresa ?? '—')} · 📍 ${f.esc(o.ubicacion ?? '—')}\\n`\n    + (o.tecnologias?.length ? `🧰 ${f.esc(o.tecnologias.join(', '))}\\n` : '')\n    + (o.motivo ? `💬 ${f.cursiva(f.esc(o.motivo))}\\n` : '');\n  if (texto.length + bloque.length > f.max) break;\n  texto += bloque;\n}\n\nif (buenas.length > f.maxOfertas) texto += `\\n…y ${buenas.length - f.maxOfertas} más en la base de datos.`;\nif (buenas.length === 0) texto += '\\nHoy no hay nada que merezca la pena. Mañana más 💪';\n\nreturn [{\n  json: {\n    canal,\n    texto,\n    telefono: cfg.whatsappTelefono,\n    chatId: cfg.telegramChatId,\n  },\n}];\n"
       }
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000017",
+      "id": "c4zad0r0-0000-4000-8000-000000000018",
+      "name": "¿WhatsApp o Telegram?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        2920,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c4zad0r0-0000-4000-8000-000000000002",
+              "leftValue": "={{ $json.canal }}",
+              "rightValue": "whatsapp",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000019",
+      "name": "Enviar por WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        3140,
+        0
+      ],
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "notes": "CallMeBot (gratis, uso personal). Credencial: Query Auth → name: apikey, value: TU_APIKEY",
+      "parameters": {
+        "url": "https://api.callmebot.com/whatsapp.php",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "={{ $json.telefono }}"
+            },
+            {
+              "name": "text",
+              "value": "={{ $json.texto }}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000020",
       "name": "Enviar a Telegram",
       "type": "n8n-nodes-base.telegram",
       "typeVersion": 1.2,
       "position": [
-        2920,
-        100
+        3140,
+        200
       ],
       "parameters": {
         "chatId": "={{ $json.chatId }}",
@@ -464,6 +537,24 @@
     },
     "Montar resumen": {
       "main": [
+        [
+          {
+            "node": "¿WhatsApp o Telegram?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿WhatsApp o Telegram?": {
+      "main": [
+        [
+          {
+            "node": "Enviar por WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ],
         [
           {
             "node": "Enviar a Telegram",

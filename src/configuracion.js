@@ -26,7 +26,11 @@ Prefiero remoto o presencial/híbrido en Valencia.`,
 
     puntuacionMinima: 6,      // de 0 a 10: a partir de aquí sale en el resumen
     maxPorEjecucion: 25,      // tope de ofertas que se mandan a la IA por ejecución
-    telegramChatId: 'PON_AQUI_TU_CHAT_ID',
+
+    // Por dónde te llegan los avisos: 'whatsapp' (CallMeBot) o 'telegram'
+    aviso: 'whatsapp',
+    whatsappTelefono: '+34XXXXXXXXX',          // tu número, con prefijo de país
+    telegramChatId: 'PON_AQUI_TU_CHAT_ID',     // solo si usas Telegram
 
     // Cualquier API compatible con OpenAI: Groq (gratis), OpenRouter, OpenAI, Ollama local...
     ia: {

@@ -11,7 +11,10 @@ nodo('Remotive').parameters.url = `${MOCK}/remotive`;
 nodo('Arbeitnow').parameters.url = `${MOCK}/arbeitnow`;
 nodo('Configuración').parameters.jsCode = nodo('Configuración').parameters.jsCode
   .replace("'https://api.groq.com/openai/v1'", `'${MOCK}/ia'`)
-  .replace("'PON_AQUI_TU_CHAT_ID'", "'123456'");
+  .replace("'PON_AQUI_TU_CHAT_ID'", "'123456'")
+  .replace("'+34XXXXXXXXX'", "'+34600000000'")
+  .replace("aviso: 'whatsapp'", `aviso: '${process.env.AVISO ?? 'whatsapp'}'`);
+nodo('Enviar por WhatsApp').parameters.url = `${MOCK}/callmebot/whatsapp.php`;
 nodo('Puntuar con IA').parameters.options.batching.batch.batchInterval = 0;
 nodo('Puntuar con IA').waitBetweenTries = 0;
 
@@ -19,6 +22,7 @@ nodo('Puntuar con IA').waitBetweenTries = 0;
 nodo('Guardar nuevas').credentials = { postgres: { id: 'e2ePostgres000001', name: 'Postgres e2e' } };
 nodo('Guardar puntuación').credentials = { postgres: { id: 'e2ePostgres000001', name: 'Postgres e2e' } };
 nodo('Puntuar con IA').credentials = { httpHeaderAuth: { id: 'e2eIaHeader000001', name: 'IA e2e' } };
+nodo('Enviar por WhatsApp').credentials = { httpQueryAuth: { id: 'e2eCallMeBot00001', name: 'CallMeBot e2e' } };
 nodo('Enviar a Telegram').credentials = { telegramApi: { id: 'e2eTelegram000001', name: 'Telegram e2e' } };
 
 writeFileSync(new URL('./workflow-e2e.json', import.meta.url), JSON.stringify(wf, null, 2));
@@ -27,6 +31,8 @@ writeFileSync(new URL('./credenciales-e2e.json', import.meta.url), JSON.stringif
     data: { host: process.env.PGHOST ?? 'localhost', port: 5432, database: 'n8n', user: 'n8n', password: process.env.PGPASSWORD ?? '', ssl: 'disable' } },
   { id: 'e2eIaHeader000001', name: 'IA e2e', type: 'httpHeaderAuth',
     data: { name: 'Authorization', value: 'Bearer clave-de-prueba' } },
+  { id: 'e2eCallMeBot00001', name: 'CallMeBot e2e', type: 'httpQueryAuth',
+    data: { name: 'apikey', value: '123456' } },
   { id: 'e2eTelegram000001', name: 'Telegram e2e', type: 'telegramApi',
     data: { accessToken: 'TOKEN_PRUEBA', baseUrl: `${MOCK}/telegram` } },
 ], null, 2));

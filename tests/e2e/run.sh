@@ -15,10 +15,14 @@ node preparar-workflow.mjs
 "$N8N" import:workflow --input=workflow-e2e.json >/dev/null 2>&1
 "$N8N" execute --id=e2eCazadorOfertas1 --rawOutput > salida.log 2>&1 || true
 
-if grep -q '"Enviar a Telegram"' salida.log && grep -q '/sendMessage' peticiones.log; then
+if grep -q '/callmebot/whatsapp.php' peticiones.log; then
+  echo "✔ El workflow terminó y envió el resumen por WhatsApp"
+  grep '/callmebot/whatsapp.php' peticiones.log | tail -1 | node -e \
+    'process.stdin.on("data",d=>console.log(new URL(JSON.parse(d).url,"http://x").searchParams.get("text")))'
+elif grep -q '/sendMessage' peticiones.log; then
   echo "✔ El workflow terminó y envió el resumen a Telegram"
   grep '/sendMessage' peticiones.log | tail -1 | node -e \
     'process.stdin.on("data",d=>console.log(JSON.parse(JSON.parse(d).cuerpo).text))'
 else
-  echo "✘ El workflow no llegó a Telegram. Mira tests/e2e/salida.log"; exit 1
+  echo "✘ El workflow no llegó a enviar el aviso. Mira tests/e2e/salida.log"; exit 1
 fi

@@ -2,7 +2,7 @@
   "name": "Cazador de ofertas · avisos de error",
   "nodes": [
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000018",
+      "id": "c4zad0r0-0000-4000-8000-000000000021",
       "name": "Si falla un workflow",
       "type": "n8n-nodes-base.errorTrigger",
       "typeVersion": 1,
@@ -13,19 +13,38 @@
       "parameters": {}
     },
     {
-      "id": "c4zad0r0-0000-4000-8000-000000000019",
-      "name": "Avisar por Telegram",
-      "type": "n8n-nodes-base.telegram",
-      "typeVersion": 1.2,
+      "id": "c4zad0r0-0000-4000-8000-000000000022",
+      "name": "Avisar por WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
       "position": [
         240,
         0
       ],
+      "notes": "Misma credencial Query Auth de CallMeBot que el workflow principal",
       "parameters": {
-        "chatId": "PON_AQUI_TU_CHAT_ID",
-        "text": "=⚠️ Ha fallado «{{ $json.workflow.name }}»\nNodo: {{ $json.execution.lastNodeExecuted }}\nError: {{ $json.execution.error.message }}\n{{ $json.execution.url }}",
-        "additionalFields": {
-          "appendAttribution": false
+        "url": "https://api.callmebot.com/whatsapp.php",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpQueryAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "phone",
+              "value": "+34XXXXXXXXX"
+            },
+            {
+              "name": "text",
+              "value": "=⚠️ Ha fallado «{{ $json.workflow.name }}»\nNodo: {{ $json.execution.lastNodeExecuted }}\nError: {{ $json.execution.error.message }}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
         }
       }
     }
@@ -35,7 +54,7 @@
       "main": [
         [
           {
-            "node": "Avisar por Telegram",
+            "node": "Avisar por WhatsApp",
             "type": "main",
             "index": 0
           }

@@ -146,8 +146,42 @@ const nodos = [
     parameters: { jsCode: src('resumen.js') },
   },
   {
+    name: '¿WhatsApp o Telegram?',
+    type: 'n8n-nodes-base.if', typeVersion: 2.2, position: [2920, 100],
+    parameters: {
+      conditions: {
+        options: { caseSensitive: true, leftValue: '', typeValidation: 'strict', version: 2 },
+        conditions: [{
+          id: id(),
+          leftValue: '={{ $json.canal }}',
+          rightValue: 'whatsapp',
+          operator: { type: 'string', operation: 'equals' },
+        }],
+        combinator: 'and',
+      },
+      options: {},
+    },
+  },
+  {
+    name: 'Enviar por WhatsApp',
+    type: 'n8n-nodes-base.httpRequest', typeVersion: 4.2, position: [3140, 0],
+    retryOnFail: true, maxTries: 3, waitBetweenTries: 5000,
+    notes: 'CallMeBot (gratis, uso personal). Credencial: Query Auth → name: apikey, value: TU_APIKEY',
+    parameters: {
+      url: 'https://api.callmebot.com/whatsapp.php',
+      authentication: 'genericCredentialType',
+      genericAuthType: 'httpQueryAuth',
+      sendQuery: true,
+      queryParameters: { parameters: [
+        { name: 'phone', value: '={{ $json.telefono }}' },
+        { name: 'text', value: '={{ $json.texto }}' },
+      ] },
+      options: { timeout: 30000, response: { response: { responseFormat: 'text' } } },
+    },
+  },
+  {
     name: 'Enviar a Telegram',
-    type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [2920, 100],
+    type: 'n8n-nodes-base.telegram', typeVersion: 1.2, position: [3140, 200],
     parameters: {
       chatId: '={{ $json.chatId }}',
       text: '={{ $json.texto }}',
@@ -173,7 +207,8 @@ const connections = {
   'Interpretar respuesta': { main: enlace([['Agrupar']]) },
   'Agrupar': { main: enlace([['Guardar puntuación']]) },
   'Guardar puntuación': { main: enlace([['Montar resumen']]) },
-  'Montar resumen': { main: enlace([['Enviar a Telegram']]) },
+  'Montar resumen': { main: enlace([['¿WhatsApp o Telegram?']]) },
+  '¿WhatsApp o Telegram?': { main: enlace([['Enviar por WhatsApp']], [['Enviar a Telegram']]) },
   // "Configuración" sale por una única salida hacia las dos fuentes a la vez
   'Configuración': {
     main: [[{ node: 'Remotive', type: 'main', index: 0 }, { node: 'Arbeitnow', type: 'main', index: 0 }]],
@@ -190,7 +225,7 @@ const workflow = {
   tags: [],
 };
 
-// Workflow auxiliar: avisa por Telegram si el principal falla
+// Workflow auxiliar: avisa por WhatsApp si el principal falla
 const errores = {
   name: 'Cazador de ofertas · avisos de error',
   nodes: [
@@ -199,17 +234,24 @@ const errores = {
       typeVersion: 1, position: [0, 0], parameters: {},
     },
     {
-      id: id(), name: 'Avisar por Telegram', type: 'n8n-nodes-base.telegram',
-      typeVersion: 1.2, position: [240, 0],
+      id: id(), name: 'Avisar por WhatsApp', type: 'n8n-nodes-base.httpRequest',
+      typeVersion: 4.2, position: [240, 0],
+      notes: 'Misma credencial Query Auth de CallMeBot que el workflow principal',
       parameters: {
-        chatId: 'PON_AQUI_TU_CHAT_ID',
-        text: "=⚠️ Ha fallado «{{ $json.workflow.name }}»\nNodo: {{ $json.execution.lastNodeExecuted }}\nError: {{ $json.execution.error.message }}\n{{ $json.execution.url }}",
-        additionalFields: { appendAttribution: false },
+        url: 'https://api.callmebot.com/whatsapp.php',
+        authentication: 'genericCredentialType',
+        genericAuthType: 'httpQueryAuth',
+        sendQuery: true,
+        queryParameters: { parameters: [
+          { name: 'phone', value: '+34XXXXXXXXX' },
+          { name: 'text', value: "=⚠️ Ha fallado «{{ $json.workflow.name }}»\nNodo: {{ $json.execution.lastNodeExecuted }}\nError: {{ $json.execution.error.message }}" },
+        ] },
+        options: { response: { response: { responseFormat: 'text' } } },
       },
     },
   ],
   connections: {
-    'Si falla un workflow': { main: [[{ node: 'Avisar por Telegram', type: 'main', index: 0 }]] },
+    'Si falla un workflow': { main: [[{ node: 'Avisar por WhatsApp', type: 'main', index: 0 }]] },
   },
   settings: { executionOrder: 'v1' },
   pinData: {},

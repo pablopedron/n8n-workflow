@@ -108,7 +108,9 @@ test('Interpretar: si la IA falla, puntuación null (se reintenta otro día)', a
   assert.equal(r.json.puntuacion, null);
 });
 
-test('Resumen: ordena, filtra por puntuación mínima y escapa HTML', async () => {
+const configTelegram = { json: { ...config.json, aviso: 'telegram' } };
+
+test('Resumen (Telegram): ordena, filtra por puntuación mínima y escapa HTML', async () => {
   const [salida] = await ejecutar(src('resumen.js'), {
     items: [
       { json: { id: '1', puntuacion: 5, titulo: 'Floja', url: 'https://a', empresa: 'A' } },
@@ -116,12 +118,13 @@ test('Resumen: ordena, filtra por puntuación mínima y escapa HTML', async () =
       { json: { id: '3', puntuacion: 7, titulo: 'Buena', url: 'https://c', empresa: 'C' } },
     ],
     nodos: {
-      'Configuración': [config],
+      'Configuración': [configTelegram],
       'Normalizar y filtrar': [{ json: { total_descargadas: 100, total_filtradas: 20, errores: [] } }],
       'Guardar nuevas': [{ json: { id: '1', es_nueva: true } }, { json: { id: '2', es_nueva: true } }, { json: { id: '3', es_nueva: false } }],
     },
   });
-  const { texto } = salida.json;
+  const { texto, canal } = salida.json;
+  assert.equal(canal, 'telegram');
   assert.match(texto, /2 nuevas/);
   assert.match(texto, /2 encajan contigo/);
   assert.ok(texto.indexOf('9/10') < texto.indexOf('7/10'), 'ordenadas de mayor a menor');
@@ -153,4 +156,27 @@ test('Resumen: avisa de las ofertas que la IA no pudo puntuar', async () => {
     },
   });
   assert.match(salida.json.texto, /no pudo puntuar 1 oferta/);
+});
+
+test('Resumen (WhatsApp): formato *negrita*, enlaces visibles y como mucho 5 ofertas', async () => {
+  const ofertas = Array.from({ length: 8 }, (_, n) => ({ json: {
+    id: String(n), puntuacion: 9 - (n % 3), titulo: `Oferta *${n}*`, url: `https://x/${n}`, empresa: 'E',
+  } }));
+  const [salida] = await ejecutar(src('resumen.js'), {
+    items: ofertas,
+    nodos: {
+      'Configuración': [config],
+      'Normalizar y filtrar': [{ json: { total_descargadas: 80, total_filtradas: 8, errores: [] } }],
+      'Guardar nuevas': ofertas.map((o) => ({ json: { id: o.json.id, es_nueva: true } })),
+    },
+  });
+  const { texto, canal, telefono } = salida.json;
+  assert.equal(canal, 'whatsapp');
+  assert.equal(telefono, config.json.whatsappTelefono);
+  assert.equal(texto.includes('<'), false, 'sin HTML');
+  assert.match(texto, /\*8 encajan contigo\*/);
+  assert.equal((texto.match(/🔗 /g) ?? []).length, 5);
+  assert.match(texto, /y 3 más/);
+  assert.match(texto, /Oferta 0/, 'quita los asteriscos del título para no romper el formato');
+  assert.ok(texto.length <= 1600);
 });
