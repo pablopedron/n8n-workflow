@@ -1,0 +1,10 @@
+{
+  "0-legal-notice": "Remotive API Legal Notice",
+  "job-count": 4,
+  "jobs": [
+    { "id": 1001, "url": "https://remotive.com/remote-jobs/software-dev/junior-php-developer-1001", "title": "Junior PHP Developer (Laravel)", "company_name": "Acme Web", "category": "Software Development", "tags": ["php", "laravel", "mysql"], "job_type": "full_time", "publication_date": "2026-11-26T09:00:00", "candidate_required_location": "Europe", "salary": "", "description": "<p>We are looking for a <b>junior</b> PHP developer &amp; Laravel fan.</p><ul><li>MySQL</li><li>Git</li></ul>" },
+    { "id": 1002, "url": "https://remotive.com/remote-jobs/software-dev/senior-backend-1002", "title": "Senior Backend Engineer", "company_name": "BigCo", "category": "Software Development", "tags": ["go"], "publication_date": "2026-11-26T09:00:00", "candidate_required_location": "Worldwide", "description": "<p>10+ years</p>" },
+    { "id": 1003, "url": "https://remotive.com/remote-jobs/software-dev/frontend-1003", "title": "Frontend Developer", "company_name": "US Only Inc", "category": "Software Development", "tags": ["react"], "publication_date": "2026-11-25T09:00:00", "candidate_required_location": "USA Only", "description": "<p>React</p>" },
+    { "id": 1004, "url": "https://remotive.com/remote-jobs/software-dev/fullstack-1004", "title": "Full Stack JavaScript Developer", "company_name": "Startup <Cool>", "category": "Software Development", "tags": ["javascript", "vue", "node"], "publication_date": "2026-11-25T09:00:00", "candidate_required_location": "Worldwide", "description": "<p>Vue + Node</p>" }
+  ]
+}

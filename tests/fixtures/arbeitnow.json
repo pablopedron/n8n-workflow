@@ -1,0 +1,9 @@
+{
+  "data": [
+    { "slug": "web-developer-valencia-123", "company_name": "Levante Soft", "title": "Web Developer", "description": "<p>PHP, JavaScript y SQL. Valencia, híbrido.</p>", "remote": false, "url": "https://www.arbeitnow.com/jobs/web-developer-valencia-123", "tags": ["php"], "job_types": ["full time"], "location": "Valencia, Spain", "created_at": 1764150000 },
+    { "slug": "data-analyst-berlin-456", "company_name": "Berlin GmbH", "title": "Data Analyst", "description": "<p>Excel</p>", "remote": false, "url": "https://www.arbeitnow.com/jobs/data-analyst-berlin-456", "tags": [], "job_types": [], "location": "Berlin", "created_at": 1764150000 },
+    { "slug": "java-dev-remote-789", "company_name": "Remote EU", "title": "Java Developer", "description": "<p>Spring</p>", "remote": true, "url": "https://www.arbeitnow.com/jobs/java-dev-remote-789", "tags": ["java"], "job_types": [], "location": "", "created_at": 1764150000 }
+  ],
+  "links": { "next": null },
+  "meta": { "current_page": 1 }
+}

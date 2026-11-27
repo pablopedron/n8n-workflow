@@ -1,0 +1,502 @@
+{
+  "name": "Cazador de ofertas",
+  "nodes": [
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000002",
+      "name": "Cada día a las 8:00",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 8 * * *"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000003",
+      "name": "Probar ahora",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        200
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000004",
+      "name": "Configuración",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        240,
+        100
+      ],
+      "parameters": {
+        "jsCode": "// ─────────────────────────────────────────────────────────────\n//  CONFIGURACIÓN · edita este nodo para adaptarlo a tu perfil\n// ─────────────────────────────────────────────────────────────\nreturn [{\n  json: {\n    // Lo que lee la IA para decidir si una oferta encaja contigo\n    perfil: `Estudiante de 2º de DAW (Desarrollo de Aplicaciones Web) en Valencia, España.\nBusco mi primer empleo o prácticas como desarrollador web junior.\nStack: PHP (Laravel), JavaScript, HTML, CSS, SQL (MySQL/PostgreSQL), Java básico.\nTambién: Docker, Git, CI/CD con Jenkins, nociones de AWS y Big Data.\nIdiomas: español nativo, inglés técnico.\nPrefiero remoto o presencial/híbrido en Valencia.`,\n\n    // Filtro previo barato (sin IA): al menos una debe aparecer en título, etiquetas o descripción\n    palabrasClave: ['php', 'laravel', 'javascript', 'typescript', 'frontend', 'front-end',\n      'backend', 'back-end', 'full stack', 'fullstack', 'web developer', 'vue', 'react',\n      'node', 'sql', 'java'],\n\n    // Si el título contiene alguna, se descarta directamente\n    excluirTitulo: ['senior', 'sr.', 'sr ', 'lead', 'staff', 'principal', 'head of',\n      'manager', 'architect', 'director', 'vp '],\n\n    // Ubicaciones aceptadas (se compara en minúsculas). Las ofertas remotas sin restricción también pasan.\n    ubicaciones: ['worldwide', 'anywhere', 'europe', 'emea', 'spain', 'españa', 'valencia',\n      'madrid', 'barcelona', 'cet', 'eu'],\n\n    puntuacionMinima: 6,      // de 0 a 10: a partir de aquí sale en el resumen\n    maxPorEjecucion: 25,      // tope de ofertas que se mandan a la IA por ejecución\n    telegramChatId: 'PON_AQUI_TU_CHAT_ID',\n\n    // Cualquier API compatible con OpenAI: Groq (gratis), OpenRouter, OpenAI, Ollama local...\n    ia: {\n      baseUrl: 'https://api.groq.com/openai/v1',\n      modelo: 'openai/gpt-oss-120b',\n    },\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000005",
+      "name": "Remotive",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "notes": "API pública de remotive.com (máx. 4 peticiones/día, hay que citar la fuente)",
+      "parameters": {
+        "url": "https://remotive.com/api/remote-jobs",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "category",
+              "value": "software-dev"
+            },
+            {
+              "name": "limit",
+              "value": "150"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000006",
+      "name": "Arbeitnow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        480,
+        200
+      ],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 5000,
+      "notes": "API pública de arbeitnow.com (Europa, sin clave)",
+      "parameters": {
+        "url": "https://www.arbeitnow.com/api/job-board-api",
+        "options": {
+          "timeout": 30000,
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000007",
+      "name": "Juntar fuentes",
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        720,
+        100
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000008",
+      "name": "Normalizar y filtrar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        100
+      ],
+      "parameters": {
+        "jsCode": "// Convierte las respuestas de cada fuente a un formato común y aplica el filtro previo.\nconst cfg = $('Configuración').first().json;\n\nconst limpiarHtml = (html = '') => String(html)\n  .replace(/<(script|style)[\\s\\S]*?<\\/\\1>/gi, ' ')\n  .replace(/<br\\s*\\/?>|<\\/p>|<\\/li>/gi, '\\n')\n  .replace(/<[^>]+>/g, ' ')\n  .replace(/&nbsp;/g, ' ').replace(/&amp;/g, '&').replace(/&lt;/g, '<')\n  .replace(/&gt;/g, '>').replace(/&quot;/g, '\"').replace(/&#0?39;/g, \"'\")\n  .replace(/[ \\t]+/g, ' ').replace(/\\n\\s*\\n+/g, '\\n').trim();\n\nconst aFecha = (v) => {\n  if (v === undefined || v === null || v === '') return null;\n  const d = typeof v === 'number' ? new Date(v * 1000) : new Date(v);\n  return isNaN(d) ? null : d.toISOString();\n};\n\nconst desdeRemotive = (j) => ({\n  fuente: 'remotive',\n  id_externo: String(j.id),\n  titulo: j.title,\n  empresa: j.company_name ?? null,\n  ubicacion: j.candidate_required_location || 'Remote',\n  remoto: true,\n  url: j.url,\n  etiquetas: Array.isArray(j.tags) ? j.tags : [],\n  descripcion: limpiarHtml(j.description),\n  publicada_en: aFecha(j.publication_date),\n});\n\nconst desdeArbeitnow = (j) => ({\n  fuente: 'arbeitnow',\n  id_externo: String(j.slug ?? j.url),\n  titulo: j.title,\n  empresa: j.company_name ?? null,\n  ubicacion: j.location || (j.remote ? 'Remote' : null),\n  remoto: Boolean(j.remote),\n  url: j.url,\n  etiquetas: [...(j.tags ?? []), ...(j.job_types ?? [])],\n  descripcion: limpiarHtml(j.description),\n  publicada_en: aFecha(j.created_at),\n});\n\n// 1. Normalizar todo lo que llega de las fuentes\nconst ofertas = [];\nconst errores = [];\nfor (const item of $input.all()) {\n  const r = item.json;\n  if (Array.isArray(r.jobs)) ofertas.push(...r.jobs.map(desdeRemotive));\n  else if (Array.isArray(r.data)) ofertas.push(...r.data.map(desdeArbeitnow));\n  else if (r.error) errores.push(r.error.message ?? String(r.error));\n}\n\n// 2. Filtro previo, sin gastar llamadas a la IA\nconst contiene = (texto, lista) => lista.some((p) => texto.includes(p));\nconst vistas = new Set();\n\nconst filtradas = ofertas.filter((o) => {\n  if (!o.titulo || !o.url) return false;\n  const clave = `${o.fuente}:${o.id_externo}`;\n  if (vistas.has(clave)) return false;\n  vistas.add(clave);\n\n  const titulo = ` ${o.titulo.toLowerCase()} `;\n  if (contiene(titulo, cfg.excluirTitulo)) return false;\n\n  const texto = `${titulo} ${o.etiquetas.join(' ')} ${o.descripcion}`.toLowerCase();\n  if (!contiene(texto, cfg.palabrasClave)) return false;\n\n  const ubicacion = (o.ubicacion ?? '').toLowerCase();\n  const ubicacionOk = contiene(ubicacion, cfg.ubicaciones)\n    || (o.remoto && (ubicacion === '' || ubicacion === 'remote'));\n  return ubicacionOk;\n});\n\n// Se manda todo en un solo item para insertarlo con una única consulta SQL\nreturn [{\n  json: {\n    total_descargadas: ofertas.length,\n    total_filtradas: filtradas.length,\n    errores,\n    ofertas: filtradas,\n  },\n}];\n"
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000009",
+      "name": "Guardar nuevas",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        1160,
+        100
+      ],
+      "alwaysOutputData": true,
+      "notes": "Inserta las nuevas (ON CONFLICT DO NOTHING) y devuelve las que faltan por puntuar",
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- $1 = array JSON con las ofertas normalizadas · $2 = máximo a puntuar\nWITH entrada AS (\n    SELECT *\n    FROM jsonb_to_recordset($1::jsonb) AS x(\n        fuente text, id_externo text, titulo text, empresa text, ubicacion text,\n        remoto boolean, url text, etiquetas jsonb, descripcion text, publicada_en timestamptz\n    )\n),\ninsertadas AS (\n    INSERT INTO cazador.ofertas\n        (fuente, id_externo, titulo, empresa, ubicacion, remoto, url, etiquetas, descripcion, publicada_en)\n    SELECT fuente, id_externo, titulo, empresa, ubicacion, remoto, url,\n           ARRAY(SELECT jsonb_array_elements_text(coalesce(etiquetas, '[]'::jsonb))),\n           descripcion, publicada_en\n    FROM entrada\n    ON CONFLICT ON CONSTRAINT ofertas_fuente_id_externo_key DO NOTHING\n    RETURNING id, titulo, empresa, ubicacion, remoto, etiquetas, descripcion, true AS es_nueva\n),\npendientes AS (\n    -- Ofertas de días anteriores que la IA no pudo puntuar: se reintentan\n    SELECT id, titulo, empresa, ubicacion, remoto, etiquetas, descripcion, false AS es_nueva\n    FROM cazador.ofertas\n    WHERE puntuacion IS NULL AND encontrada_en > now() - interval '7 days'\n)\nSELECT * FROM (\n    SELECT * FROM insertadas\n    UNION ALL\n    SELECT * FROM pendientes\n) t\nORDER BY es_nueva DESC, id DESC\nLIMIT $2::int;\n",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json.ofertas) }}, {{ $('Configuración').first().json.maxPorEjecucion }}"
+        }
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000010",
+      "name": "¿Hay que puntuar?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1380,
+        100
+      ],
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "c4zad0r0-0000-4000-8000-000000000001",
+              "leftValue": "={{ Boolean($json.id) }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000011",
+      "name": "Preparar prompt",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1600,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Construye la petición a la IA para cada oferta nueva (modo: una vez por item).\nconst cfg = $('Configuración').first().json;\nconst o = $json;\n\nconst sistema = `Eres un reclutador técnico que evalúa ofertas de empleo para un candidato concreto.\nResponde SOLO con un objeto JSON válido con estas claves:\n{\"puntuacion\": entero 0-10, \"nivel\": \"junior\"|\"mid\"|\"senior\"|\"desconocido\",\n \"tecnologias\": [máximo 8 strings], \"motivo\": \"una frase en español, máximo 160 caracteres\"}\nCriterios: 10 = encaja perfecto con su stack y nivel; 0 = nada que ver.\nPenaliza mucho si pide más de 3 años de experiencia o un nivel senior.\nPenaliza si exige residir en un país donde el candidato no puede trabajar.`;\n\nconst usuario = `PERFIL DEL CANDIDATO:\n${cfg.perfil}\n\nOFERTA:\nTítulo: ${o.titulo}\nEmpresa: ${o.empresa ?? 'desconocida'}\nUbicación: ${o.ubicacion ?? 'desconocida'} ${o.remoto ? '(remoto)' : ''}\nEtiquetas: ${(o.etiquetas ?? []).join(', ')}\nDescripción:\n${String(o.descripcion ?? '').slice(0, 3000)}`;\n\nreturn {\n  json: {\n    id: o.id,\n    peticion: {\n      model: cfg.ia.modelo,\n      temperature: 0.2,\n      response_format: { type: 'json_object' },\n      messages: [\n        { role: 'system', content: sistema },\n        { role: 'user', content: usuario },\n      ],\n    },\n  },\n};\n"
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000012",
+      "name": "Puntuar con IA",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1820,
+        0
+      ],
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 10000,
+      "notes": "Cualquier API compatible con OpenAI. Credencial: Header Auth → Authorization: Bearer TU_CLAVE",
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Configuración').first().json.ia.baseUrl }}/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.peticion) }}",
+        "options": {
+          "timeout": 60000,
+          "batching": {
+            "batch": {
+              "batchSize": 1,
+              "batchInterval": 4000
+            }
+          }
+        }
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000013",
+      "name": "Interpretar respuesta",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2040,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "jsCode": "// Lee la respuesta de la IA y la valida (modo: una vez por item).\n// Si la IA falla o devuelve algo raro, la oferta se guarda con puntuación null y se reintenta otro día.\nconst oferta = $('Preparar prompt').item.json;\n\nlet r = {};\ntry {\n  const contenido = $json.choices?.[0]?.message?.content ?? '';\n  // Algunos modelos envuelven el JSON en ```json ... ```\n  const limpio = contenido.replace(/^```(?:json)?\\s*|\\s*```$/g, '').trim();\n  r = JSON.parse(limpio);\n} catch (e) {\n  r = {};\n}\n\nconst n = Number.parseInt(r.puntuacion, 10);\nconst puntuacion = Number.isFinite(n) ? Math.min(10, Math.max(0, n)) : null;\nconst niveles = ['junior', 'mid', 'senior', 'desconocido'];\n\nreturn {\n  json: {\n    id: oferta.id,\n    puntuacion,\n    nivel: niveles.includes(r.nivel) ? r.nivel : 'desconocido',\n    tecnologias: Array.isArray(r.tecnologias)\n      ? r.tecnologias.filter((t) => typeof t === 'string').slice(0, 8)\n      : [],\n    motivo: typeof r.motivo === 'string' ? r.motivo.slice(0, 300) : null,\n  },\n};\n"
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000014",
+      "name": "Agrupar",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2260,
+        0
+      ],
+      "parameters": {
+        "jsCode": "// Junta todos los items en uno solo para guardarlos con una única consulta SQL.\nreturn [{ json: { puntuaciones: $input.all().map((i) => i.json) } }];\n"
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000015",
+      "name": "Guardar puntuación",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.8,
+      "position": [
+        2480,
+        0
+      ],
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- $1 = array JSON con {id, puntuacion, nivel, tecnologias, motivo}\nUPDATE cazador.ofertas AS o\nSET puntuacion  = p.puntuacion,\n    nivel       = p.nivel,\n    tecnologias = ARRAY(SELECT jsonb_array_elements_text(coalesce(p.tecnologias, '[]'::jsonb))),\n    motivo      = p.motivo,\n    puntuada_en = CASE WHEN p.puntuacion IS NULL THEN NULL ELSE now() END\nFROM jsonb_to_recordset($1::jsonb) AS p(\n    id bigint, puntuacion smallint, nivel text, tecnologias jsonb, motivo text\n)\nWHERE o.id = p.id\nRETURNING o.id, o.titulo, o.empresa, o.ubicacion, o.url, o.puntuacion, o.nivel, o.tecnologias, o.motivo;\n",
+        "options": {
+          "queryReplacement": "={{ JSON.stringify($json.puntuaciones) }}"
+        }
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000016",
+      "name": "Montar resumen",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2700,
+        100
+      ],
+      "parameters": {
+        "jsCode": "// Monta el mensaje de Telegram con las mejores ofertas del día.\nconst cfg = $('Configuración').first().json;\nconst stats = $('Normalizar y filtrar').first().json;\nconst nuevas = $('Guardar nuevas').all().filter((i) => i.json.es_nueva === true).length;\n\nconst esc = (s = '') => String(s)\n  .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');\n\nconst buenas = $input.all()\n  .map((i) => i.json)\n  .filter((o) => o.puntuacion !== null && o.puntuacion >= cfg.puntuacionMinima)\n  .sort((a, b) => b.puntuacion - a.puntuacion);\n\nconst barra = (p) => '●'.repeat(p) + '○'.repeat(10 - p);\n\nlet texto = `<b>🎯 Cazador de ofertas</b>\\n`\n  + `${stats.total_descargadas} revisadas · ${stats.total_filtradas} pasan el filtro · `\n  + `${nuevas} nuevas · <b>${buenas.length} encajan contigo</b>\\n`;\n\nconst sinPuntuar = $input.all().filter((i) => i.json.id && i.json.puntuacion === null).length;\nif (sinPuntuar) texto += `\\n⏳ La IA no pudo puntuar ${sinPuntuar} oferta(s); se reintentará en la próxima ejecución.\\n`;\n\nif (stats.errores?.length) {\n  texto += `\\n⚠️ Fuentes con error: ${esc(stats.errores.join(' | ')).slice(0, 300)}\\n`;\n}\n\nfor (const o of buenas.slice(0, 10)) {\n  const bloque = `\\n<b>${o.puntuacion}/10</b> ${barra(o.puntuacion)}\\n`\n    + `<a href=\"${esc(o.url)}\">${esc(o.titulo)}</a>\\n`\n    + `🏢 ${esc(o.empresa ?? '—')} · 📍 ${esc(o.ubicacion ?? '—')}\\n`\n    + (o.tecnologias?.length ? `🧰 ${esc(o.tecnologias.join(', '))}\\n` : '')\n    + (o.motivo ? `💬 <i>${esc(o.motivo)}</i>\\n` : '');\n  if (texto.length + bloque.length > 3900) break; // límite de Telegram: 4096\n  texto += bloque;\n}\n\nif (buenas.length === 0) texto += '\\nHoy no hay nada que merezca la pena. Mañana más 💪';\n\nreturn [{ json: { texto, chatId: cfg.telegramChatId } }];\n"
+      }
+    },
+    {
+      "id": "c4zad0r0-0000-4000-8000-000000000017",
+      "name": "Enviar a Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2920,
+        100
+      ],
+      "parameters": {
+        "chatId": "={{ $json.chatId }}",
+        "text": "={{ $json.texto }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML",
+          "disable_web_page_preview": true
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Cada día a las 8:00": {
+      "main": [
+        [
+          {
+            "node": "Configuración",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Probar ahora": {
+      "main": [
+        [
+          {
+            "node": "Configuración",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remotive": {
+      "main": [
+        [
+          {
+            "node": "Juntar fuentes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Arbeitnow": {
+      "main": [
+        [
+          {
+            "node": "Juntar fuentes",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Juntar fuentes": {
+      "main": [
+        [
+          {
+            "node": "Normalizar y filtrar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalizar y filtrar": {
+      "main": [
+        [
+          {
+            "node": "Guardar nuevas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar nuevas": {
+      "main": [
+        [
+          {
+            "node": "¿Hay que puntuar?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "¿Hay que puntuar?": {
+      "main": [
+        [
+          {
+            "node": "Preparar prompt",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Montar resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Preparar prompt": {
+      "main": [
+        [
+          {
+            "node": "Puntuar con IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Puntuar con IA": {
+      "main": [
+        [
+          {
+            "node": "Interpretar respuesta",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Interpretar respuesta": {
+      "main": [
+        [
+          {
+            "node": "Agrupar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agrupar": {
+      "main": [
+        [
+          {
+            "node": "Guardar puntuación",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Guardar puntuación": {
+      "main": [
+        [
+          {
+            "node": "Montar resumen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar resumen": {
+      "main": [
+        [
+          {
+            "node": "Enviar a Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Configuración": {
+      "main": [
+        [
+          {
+            "node": "Remotive",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Arbeitnow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "Europe/Madrid"
+  },
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": []
+}
