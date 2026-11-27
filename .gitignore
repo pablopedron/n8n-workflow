@@ -1,0 +1,6 @@
+.env
+node_modules/
+*.log
+tests/e2e/*.log
+tests/e2e/workflow-e2e.json
+tests/e2e/credenciales-e2e.json

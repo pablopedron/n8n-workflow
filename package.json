@@ -1,0 +1,13 @@
+{
+  "name": "cazador-ofertas-n8n",
+  "version": "1.0.0",
+  "description": "Workflow de n8n que busca ofertas de empleo, las puntúa con IA según tu perfil y te manda un resumen diario por Telegram",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build-workflow.mjs",
+    "test": "node --test"
+  },
+  "engines": { "node": ">=20" },
+  "license": "MIT"
+}
